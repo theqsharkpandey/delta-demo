@@ -3,9 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Costume Haven - Buy & Rent Costumes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Chosen Palette: Festive Neutrals (Warm grays, beige, with pops of vibrant orange and deep purple) -->
+    <!-- Application Structure Plan: The SPA is structured around a central content area that dynamically displays different "views" (Home, Browse, Product Detail, Vendor Dashboard) using JavaScript. This approach maintains a single-page experience, which is fast and fluid. Navigation in the header acts as the primary control for switching views. The core user flow is designed to be intuitive: discover via the home page or search, refine with filters in the browse view, inspect details, and then select a buy/rent action. This structure was chosen to mirror familiar e-commerce patterns, making it immediately understandable for users, while efficiently managing the complex state of a dual buy/rent system without page reloads. -->
+    <!-- Visualization & Content Choices: 
+        - Product Grid (Browse View): Goal: Organize/Compare. Method: Responsive CSS Grid of product cards. Interaction: Clicking a card navigates to the detail view. Justification: Standard, highly effective e-commerce pattern for scannability. Implemented with Tailwind CSS.
+        - Filter Sidebar (Browse View): Goal: Organize/Interact. Method: HTML form elements (checkboxes, range slider). Interaction: User selections trigger a JS function to filter the main product data array and re-render the grid. Justification: Provides powerful, real-time control over the displayed products. Implemented with vanilla JS.
+        - Interactive Rental Calendar (Product Detail View): Goal: Inform/Interact. Method: Custom-built calendar using HTML table and JS. Interaction: Users click start/end dates to select a rental period; booked dates are visually disabled. Justification: This is a critical feature for a rental service. A custom build was necessary to meet the no-library constraint and integrate seamlessly. Implemented with vanilla JS and Tailwind CSS.
+        - Vendor Sales Chart (Dashboard View): Goal: Inform/Analyze. Method: Bar chart. Interaction: Hovering over bars shows tooltips with exact earnings. Justification: Provides a quick, visual summary of a vendor's performance. Implemented with Chart.js library.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
-<body>
+<body class="bg-gray-50 text-gray-800">
+
+    <div id="app-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Header -->
+        <header class="py-4 border-b border-gray-200">
+            <nav class="flex justify-between items-center">
+                <div class="flex items-center space-x-8">
+                    <h1 class="text-3xl font-bold text-violet-600 cursor-pointer" onclick="navigateTo('home')">Costume Haven</h1>
+                    <ul class="hidden md:flex items-center space-x-6">
+                        <li><a href="#" id="nav-home" class="text-lg font-medium text-gray-600 hover:text-violet-600 transition-colors pb-1 active-nav" onclick="setActiveNav('home')">Home</a></li>
+                        <li><a href="#" id="nav-browse" class="text-lg font-medium text-gray-600 hover:text-violet-600 transition-colors pb-1 inactive-nav" onclick="setActiveNav('browse')">Browse</a></li>
+                        <li><a href="#" id="nav-dashboard" class="text-lg font-medium text-gray-600 hover:text-violet-600 transition-colors pb-1 inactive-nav" onclick="setActiveNav('dashboard')">Sell</a></li>
+                    </ul>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <input id="search-bar" type="text" placeholder="Search costumes..." class="w-40 md:w-64 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-violet-400 transition">
+                        <button onclick="handleSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600">
+                            <span class="text-xl"> &#128269; </span>
+                        </button>
+                    </div>
+                     <div class="relative">
+                        <button onclick="toggleCart()" class="p-2 rounded-full hover:bg-gray-100 transition">
+                            <span class="text-2xl">🛒</span>
+                            <span id="cart-count" class="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="py-8">
+
+            <!-- Home View -->
+            <div id="home-view">
+                <section class="text-center bg-violet-100 rounded-lg p-12 mb-12">
+                    <h2 class="text-4xl font-bold text-gray-800 mb-4">Your Ultimate Costume Destination</h2>
+                    <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">Discover thousands of unique costumes to buy or rent. From blockbuster heroes to historical figures, find your perfect look for any occasion.</p>
+                    <button class="bg-orange-500 text-white font-bold py-3 px-8 rounded-full hover:bg-orange-600 transition-transform transform hover:scale-105" onclick="setActiveNav('browse')">Explore Collection</button>
+                </section>
+                
+                <section id="featured-items" class="mb-12">
+                     <h3 class="text-2xl font-bold mb-6 text-center">Featured Costumes</h3>
+                     <div id="featured-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <!-- Featured items will be injected here by JS -->
+                     </div>
+                </section>
+                
+                <section class="bg-white p-8 rounded-lg shadow-sm">
+                    <h3 class="text-2xl font-bold mb-6 text-center">How It Works</h3>
+                    <div class="grid md:grid-cols-3 gap-8 text-center">
+                        <div class="flex flex-col items-center">
+                            <div class="bg-violet-100 text-violet-600 rounded-full h-16 w-16 flex items-center justify-center text-3xl mb-4">&#128269;</div>
+                            <h4 class="text-xl font-semibold mb-2">1. Discover</h4>
+                            <p class="text-gray-600">Browse our vast collection or use the search to find the perfect costume. Filter by category, size, price, and more to narrow down your options.</p>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="bg-orange-100 text-orange-600 rounded-full h-16 w-16 flex items-center justify-center text-3xl mb-4">&#128197;</div>
+                            <h4 class="text-xl font-semibold mb-2">2. Choose & Book</h4>
+                            <p class="text-gray-600">Decide whether to buy it forever or rent it for an occasion. Our interactive calendar makes booking rental dates simple and clear.</p>
+                        </div>
+                         <div class="flex flex-col items-center">
+                            <div class="bg-green-100 text-green-600 rounded-full h-16 w-16 flex items-center justify-center text-3xl mb-4">&#127881;</div>
+                            <h4 class="text-xl font-semibold mb-2">3. Enjoy</h4>
+                            <p class="text-gray-600">Receive your costume at your doorstep. Enjoy your event, and if you've rented, simply use the prepaid return label to send it back.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Browse View -->
+            <div id="browse-view" class="hidden">
+                 <div class="flex flex-col md:flex-row gap-8">
+                    <!-- Filters -->
+                    <aside class="w-full md:w-1/4">
+                        <div class="bg-white p-6 rounded-lg shadow-sm sticky top-8">
+                            <h3 class="text-xl font-bold mb-4">Filters</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="font-semibold mb-2">Category</h4>
+                                    <div id="category-filters" class="space-y-1">
+                                       <!-- Category filters injected by JS -->
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-2">Price</h4>
+                                    <input type="range" id="price-filter" min="0" max="500" value="500" class="w-full">
+                                    <div class="text-sm text-gray-500 text-right">Up to $<span id="price-value">500</span></div>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-2">Transaction Type</h4>
+                                    <div class="flex items-center">
+                                        <input type="radio" id="type-all" name="transaction_type" value="all" checked class="h-4 w-4 text-violet-600 border-gray-300 focus:ring-violet-500">
+                                        <label for="type-all" class="ml-2 block text-sm text-gray-900">All</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="radio" id="type-buy" name="transaction_type" value="buy" class="h-4 w-4 text-violet-600 border-gray-300 focus:ring-violet-500">
+                                        <label for="type-buy" class="ml-2 block text-sm text-gray-900">Buy Only</label>
+                                    </div>
+                                     <div class="flex items-center">
+                                        <input type="radio" id="type-rent" name="transaction_type" value="rent" class="h-4 w-4 text-violet-600 border-gray-300 focus:ring-violet-500">
+                                        <label for="type-rent" class="ml-2 block text-sm text-gray-900">Rent Only</label>
+                                    </div>
+                                </div>
+                                <button id="apply-filters" class="w-full bg-violet-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-violet-700 transition">Apply</button>
+                            </div>
+                        </div>
+                    </aside>
+                    <!-- Product Grid -->
+                    <section class="w-full md:w-3/4">
+                        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <!-- Product cards injected by JS -->
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Product Detail View -->
+            <div id="product-detail-view" class="hidden">
+                 <!-- Product detail content injected by JS -->
+            </div>
+            
+            <!-- Vendor Dashboard View -->
+            <div id="dashboard-view" class="hidden">
+                <div class="bg-white p-8 rounded-lg shadow-sm">
+                    <h2 class="text-3xl font-bold mb-6">Vendor Dashboard</h2>
+                    
+                    <div class="grid md:grid-cols-3 gap-6 mb-8 text-center">
+                        <div class="bg-gray-100 p-4 rounded-lg">
+                            <p class="text-sm text-gray-500">Total Listings</p>
+                            <p class="text-2xl font-bold">12</p>
+                        </div>
+                        <div class="bg-gray-100 p-4 rounded-lg">
+                            <p class="text-sm text-gray-500">Monthly Rentals</p>
+                            <p class="text-2xl font-bold">34</p>
+                        </div>
+                        <div class="bg-gray-100 p-4 rounded-lg">
+                            <p class="text-sm text-gray-500">Monthly Sales</p>
+                            <p class="text-2xl font-bold">$2,150</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <h3 class="text-xl font-bold mb-4">Sales & Rental Performance</h3>
+                        <p class="text-gray-600 mb-4">This chart provides a visual breakdown of your earnings from both direct sales and rental fees over the past few months. Use this to track your performance, identify trends, and understand which income stream is performing best for your inventory.</p>
+                        <div class="chart-container">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">My Listings</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costume</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buy Price</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rent Price</th>
+                                        <th scope="col" class="relative px-6 py-3"><span class="sr-only">Edit</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <!-- Sample Data -->
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Galactic Knight</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600">Active</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$120.00</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$35.00 / day</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><a href="#" class="text-violet-600 hover:text-violet-900">Edit</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Enchanted Sorceress</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-600">Rented Out</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$250.00</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$60.00 / day</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><a href="#" class="text-violet-600 hover:text-violet-900">Edit</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cart Modal -->
+            <div id="cart-modal" class="modal-backdrop hidden">
+                <div class="bg-white rounded-lg shadow-xl w-full max-w-md m-4">
+                    <div class="p-6 border-b flex justify-between items-center">
+                        <h3 class="text-xl font-bold">Your Cart</h3>
+                        <button onclick="toggleCart()" class="text-gray-500 hover:text-gray-800">&times;</button>
+                    </div>
+                    <div id="cart-items" class="p-6 max-h-96 overflow-y-auto">
+                        <!-- Cart items injected here -->
+                    </div>
+                     <div id="cart-footer" class="p-6 bg-gray-50 rounded-b-lg">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-lg font-medium">Total:</span>
+                            <span id="cart-total" class="text-xl font-bold">$0.00</span>
+                        </div>
+                        <button class="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 transition">Proceed to Checkout</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+    <script src="app.js"></script>
     
 </body>
 </html>
